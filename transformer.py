@@ -252,7 +252,7 @@ class Transformer(nn.Module):
 
         for t in max_len:
             in_dec = torch.LongTensor(out_idxs).unsqueeze(0).to(self.device)
-            mask_dec = self.seq_mask(in_dec, pad_idx_enc, pad_idx_dec)
+            mask_dec = self.seq_mask(in_dec, pad_idx_dec)
             with torch.no_grad():
                 out_dec = self.decoder(in_dec, out_enc, mask_dec)
 
