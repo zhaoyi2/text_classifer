@@ -248,7 +248,7 @@ class Transformer(nn.Module):
         with torch.no_grad():
             out_enc = self.encoder(in_enc, mask_enc)
 
-        out_idxs = ['<sos>']
+        out_idxs = [trg_vocab.index('<sos>')]
 
         for t in max_len:
             in_dec = torch.LongTensor(out_idxs).unsqueeze(0).to(self.device)
@@ -257,7 +257,7 @@ class Transformer(nn.Module):
                 out_dec = self.decoder(in_dec, out_enc, mask_dec)
 
             out_idx = torch.argmax(out_dec, dim=-1)[:, -1].item()
-            if out_idx == trg_vocab['<eos>']:
+            if out_idx == trg_vocab.index('<eos>'):
                 break
             out_idxs.append(out_idx)
 
