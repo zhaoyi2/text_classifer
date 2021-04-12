@@ -102,8 +102,8 @@ class PosEmbedding(nn.Module):
             self.deveice)
 
         pos_emb = torch.zeros([batch_size, self.max_len, self.embedd_size]).to(self.deveice)
-        pos_emb[:, :, 0::2] = torch.sin(pos.float().unsqueeze(-1) / div[0: int(self.embedd_size / 2)])
-        pos_emb[:, :, 1::2] = torch.sin(pos.float().unsqueeze(-1) / div[int(self.embedd_size / 2):])
+        pos_emb[:, :, 0: int(self.embedd_size / 2)] = torch.sin(pos.float().unsqueeze(-1) / div[0: int(self.embedd_size / 2)])
+        pos_emb[:, :, int(self.embedd_size / 2):] = torch.cos(pos.float().unsqueeze(-1) / div[int(self.embedd_size / 2):])
 
         return pos_emb
 
@@ -121,9 +121,8 @@ class EncodeLayer(nn.Module):
         self.feedfordlayer = Feedforward(in_dims, in_dims, dropout)
 
     def forward(self, input, src_mask):
-        out = self.ln(input)
 
-        out = self.multiheadatt(out, mask=src_mask)
+        out = self.multiheadatt(input, mask=src_mask)
 
         out = self.feedfordlayer(out)
 
@@ -139,8 +138,8 @@ class DecodeLayer(nn.Module):
         self.feedfordlayer = Feedforward(in_dims, in_dims, dropout)
 
     def forward(self, in_dec, out_enc, trg_mask):
-        out = self.ln(in_dec)
-        out = self.multiheadatt_en(out, mask=trg_mask)
+        
+        out = self.multiheadatt_en(in_dec, mask=trg_mask)
         out = self.multiheadatt_de(out, out_enc=out_enc, mask=trg_mask)
         out = self.feedfordlayer(out)
         return out
