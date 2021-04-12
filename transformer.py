@@ -204,22 +204,22 @@ class Transformer(nn.Module):
 
         self.device = device
 
-    def pad_mask(self, input, pad_idx_enc):
+    def pad_mask(self, input, pad_idx):
         #input shape: batch_size*seq_len
-        mask = (input != pad_idx_enc)
+        mask = (input != pad_idx)
         mask = mask.unsqueeze(-1)
         return mask
 
-    def seq_mask(self, input, pad_idx_enc, pad_idx_dec):
+    def seq_mask(self, input, pad_idx):
         #input shape: batch_size*seq_len
         batch_size = input.size(0)
         seq_len = input.size(1)
 
-        pad_mask = self.pad_mask(input, pad_idx_enc)
+        pad_mask = self.pad_mask(input, pad_idx)
 
         seq_mask = torch.ones([seq_len, seq_len])
         seq_mask = torch.triu(seq_mask, 1)
-        seq_mask = (seq_mask == pad_idx_dec).unsqueeze(0).repeat(batch_size, 1, 1)
+        seq_mask = (seq_mask == 0).unsqueeze(0).repeat(batch_size, 1, 1)
 
         return pad_mask & seq_mask
 
@@ -227,7 +227,7 @@ class Transformer(nn.Module):
         mask_enc = self.pad_mask(in_enc, pad_idx_enc)
         out_enc = self.encoder(in_enc, mask_enc)
 
-        mask_dec = self.seq_mask(in_dec, pad_idx_enc, pad_idx_dec)
+        mask_dec = self.seq_mask(in_dec, pad_idx_dec)
         out_dec = self.decoder(in_dec, out_enc, mask_dec)
 
         out_flat = out_dec.contiguous().view(-1, out_dec.size(-1))
